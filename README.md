@@ -1,4 +1,4 @@
-# Microservicio de prediccion de enfermedades
+# Microservicio de predicción de enfermedades
 
 ## Descripción
 
