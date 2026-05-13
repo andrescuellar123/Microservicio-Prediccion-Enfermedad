@@ -1,4 +1,4 @@
-# Servicio Docker para predicción simulada de enfermedad
+# Microservicio de prediccion de enfermedades
 
 ## Descripción
 
