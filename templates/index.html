@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Predicción simulada de enfermedad</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 850px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f7f7f7;
+        }
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 9px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        .checkbox-row {
+            margin-top: 15px;
+        }
+        .checkbox-row input {
+            width: auto;
+        }
+        button {
+            margin-top: 20px;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #2c5aa0;
+            color: white;
+            font-weight: bold;
+        }
+        .resultado {
+            margin-top: 25px;
+            padding: 15px;
+            background: #eef4ff;
+            border-left: 5px solid #2c5aa0;
+        }
+        .error {
+            background: #ffecec;
+            border-left: 5px solid #c0392b;
+        }
+        code {
+            background: #eee;
+            padding: 2px 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>Predicción simulada de enfermedad</h1>
+    <p>
+        Este servicio recibe datos básicos de síntomas y retorna una clasificación simulada.
+        No corresponde a un modelo médico real y se usa únicamente para fines académicos.
+    </p>
+
+    <form method="POST" action="/predecir">
+        <label for="edad">Edad</label>
+        <input type="number" id="edad" name="edad" min="0" max="120" required>
+
+        <label for="fiebre">Temperatura corporal</label>
+        <input type="number" id="fiebre" name="fiebre" step="0.1" min="30" max="45" required>
+
+        <label for="dolor">Nivel de dolor, de 0 a 10</label>
+        <input type="number" id="dolor" name="dolor" min="0" max="10" required>
+
+        <label for="duracion_dias">Duración de síntomas en días</label>
+        <input type="number" id="duracion_dias" name="duracion_dias" min="0" required>
+
+        <div class="checkbox-row">
+            <input type="checkbox" id="condicion_cronica" name="condicion_cronica">
+            <label for="condicion_cronica" style="display:inline;">Paciente con antecedente crónico</label>
+        </div>
+
+        <button type="submit">Obtener predicción</button>
+    </form>
+
+    {% if resultado %}
+        <div class="resultado {% if resultado.error %}error{% endif %}">
+            {% if resultado.error %}
+                <h2>Error</h2>
+                <p>{{ resultado.error }}</p>
+                <p>{{ resultado.detalle }}</p>
+            {% else %}
+                <h2>Resultado: {{ resultado.estado }}</h2>
+                <p>{{ resultado.nota }}</p>
+                <h3>Datos ingresados</h3>
+                <ul>
+                    <li>Edad: {{ resultado.entrada.edad }}</li>
+                    <li>Fiebre: {{ resultado.entrada.fiebre }}</li>
+                    <li>Dolor: {{ resultado.entrada.dolor }}</li>
+                    <li>Duración: {{ resultado.entrada.duracion_dias }} días</li>
+                    <li>Condición crónica: {{ resultado.entrada.condicion_cronica }}</li>
+                </ul>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <h2>Uso por API</h2>
+    <p>También se puede consultar el servicio por el endpoint <code>/predecir</code> enviando datos en formato JSON.</p>
+</div>
+</body>
+</html>
