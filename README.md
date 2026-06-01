@@ -849,3 +849,88 @@ docker-compose run api python monitoring/drift_tests.py
 ## CHANGELOG
 
 Los cambios entre versiones se documentan en `CHANGELOG.md` siguiendo el formato [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
+
+
+### Diagram de Arquitectura
+
+
+```mermaid
+flowchart TB
+    subgraph OT[Offline Training]
+        direction TB
+        GH[GitHub Repository]
+        GHA["GitHub Actions
+CI + pruebas automáticas"]
+        GH --- GHA
+
+        subgraph DI[Data Input]
+            direction LR
+            CSV["Datos clínicos anonimizados
+CSV de entrada"]
+            VAL["src/validation.py
+Validación de datos"]
+            PRE["src/preprocessing.py
+pandas + scikit-learn"]
+            CSV --> VAL --> PRE
+        end
+
+        subgraph MI[Model Iterations]
+            direction LR
+            SM["SMOTE
+Manejo de desbalance"]
+            TR["src/train.py
+Random Forest training"]
+            MF["MLflow
+Tracking de experimentos"]
+            PRE --> SM --> TR --> MF
+        end
+
+        subgraph SE[Model Selection & Evaluation]
+            direction TB
+            EV["Recall · Precision · F1 · ROC AUC
+Matriz de confusión"]
+            QG{Recall >= 0.80?}
+            PRODREADY[Modelo aprobado para producción]
+            MF --> EV --> QG
+            QG -- No --> TR
+            QG -- Sí --> PRODREADY
+        end
+    end
+
+    subgraph PR[Predictions]
+        direction TB
+
+        subgraph DEP[Model Deployment]
+            direction LR
+            DC[Docker + Docker Compose]
+            API["FastAPI service
+/health · /predict · /metrics"]
+            DC --> API
+        end
+
+        subgraph USE[Prediction Consumption]
+            direction LR
+            LOCAL["Médico en computador local"]
+            REMOTE["Sistema hospitalario o servidor remoto"]
+            LOCAL --> API
+            REMOTE --> API
+        end
+
+        subgraph MON[Model Monitoring]
+            direction LR
+            PROM["Prometheus
+Monitoreo técnico del servicio"]
+            DRIFT["monitoring/drift_tests.py
+KS + Chi-cuadrado"]
+            RETRAIN["Reentrenamiento cuando hay drift
+o baja el recall"]
+            API --> PROM
+            API --> DRIFT
+            DRIFT --> RETRAIN
+            RETRAIN --> TR
+        end
+    end
+
+    PRODREADY --> DC
+```
+
